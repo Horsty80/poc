@@ -1,0 +1,179 @@
+/* Styles complémentaires pour le composant Bootstrap */
+.bootstrap-selectable-container {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+/* Menu flottant avec styles Bootstrap */
+.bootstrap-floating-menu {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+  z-index: 1050; /* Z-index Bootstrap pour les dropdowns */
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background-color: var(--bs-body-bg);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.bootstrap-floating-menu.show {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+/* Amélioration des items de liste */
+.bootstrap-floating-menu .list-group-item {
+  border-left: none;
+  border-right: none;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color-translucent);
+}
+
+.bootstrap-floating-menu .list-group-item:first-child {
+  border-top: none;
+  border-top-left-radius: var(--bs-border-radius);
+  border-top-right-radius: var(--bs-border-radius);
+}
+
+.bootstrap-floating-menu .list-group-item:last-child {
+  border-bottom: none;
+  border-bottom-left-radius: var(--bs-border-radius);
+  border-bottom-right-radius: var(--bs-border-radius);
+}
+
+/* Hover et focus states */
+.bootstrap-floating-menu .list-group-item-action:hover {
+  background-color: var(--bs-gray-100);
+}
+
+.bootstrap-floating-menu .list-group-item-action:focus {
+  background-color: var(--bs-primary-bg-subtle);
+  border-color: var(--bs-primary-border-subtle);
+}
+
+.bootstrap-floating-menu .list-group-item.active {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: var(--bs-white);
+}
+
+/* Scrollbar custom pour le menu */
+.bootstrap-floating-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.bootstrap-floating-menu::-webkit-scrollbar-track {
+  background: var(--bs-gray-100);
+  border-radius: 3px;
+}
+
+.bootstrap-floating-menu::-webkit-scrollbar-thumb {
+  background: var(--bs-gray-400);
+  border-radius: 3px;
+}
+
+.bootstrap-floating-menu::-webkit-scrollbar-thumb:hover {
+  background: var(--bs-gray-500);
+}
+
+/* Animation pour l'icône du bouton */
+.bootstrap-selectable-container .btn i {
+  transition: transform 0.2s ease;
+}
+
+.bootstrap-selectable-container .btn[aria-expanded="true"] i {
+  transform: rotate(180deg);
+}
+
+/* Amélioration du focus */
+.bootstrap-selectable-container .form-control:focus {
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Badge de direction */
+.bootstrap-selectable-container .badge {
+  font-size: 0.65em;
+  animation: pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.1);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .bootstrap-floating-menu {
+    max-height: 200px;
+    font-size: 0.9rem;
+  }
+  
+  .bootstrap-floating-menu .list-group-item {
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .bootstrap-floating-menu {
+    background-color: var(--bs-dark);
+    border-color: var(--bs-gray-700);
+  }
+  
+  .bootstrap-floating-menu .list-group-item {
+    background-color: var(--bs-dark);
+    border-color: var(--bs-gray-700);
+    color: var(--bs-light);
+  }
+  
+  .bootstrap-floating-menu .list-group-item-action:hover {
+    background-color: var(--bs-gray-800);
+  }
+}
+
+/* États de validation Bootstrap */
+.bootstrap-selectable-container .is-invalid {
+  border-color: var(--bs-form-invalid-border-color);
+}
+
+.bootstrap-selectable-container .is-invalid:focus {
+  border-color: var(--bs-form-invalid-border-color);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25);
+}
+
+/* Animation d'entrée selon le placement */
+.bootstrap-floating-menu[data-placement^="top"] {
+  animation: slideUpIn 0.15s ease-out;
+}
+
+.bootstrap-floating-menu[data-placement^="bottom"] {
+  animation: slideDownIn 0.15s ease-out;
+}
+
+@keyframes slideDownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideUpIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
