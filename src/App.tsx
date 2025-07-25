@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { SelectableInput } from './SelectableInput'
+import { FloatingSelectableInput } from './FloatingSelectableInput'
 import './App.css'
 
 // Données d'exemple pour tester le composant
@@ -18,20 +19,21 @@ const mockItems = [
 
 function App() {
   const [selectedFramework, setSelectedFramework] = useState<any>(null)
+  const [selectedFloatingFramework, setSelectedFloatingFramework] = useState<any>(null)
 
   return (
     <div style={{ padding: '40px', maxWidth: '800px', margin: '0 auto' }}>
-      <h1>Test du composant SelectableInput</h1>
-      <p>Ce composant utilise Downshift pour la gestion de l'état et de l'interaction.</p>
+      <h1>Test des composants SelectableInput</h1>
+      <p>Comparaison entre le composant basique et celui avec Floating UI.</p>
       
       <div style={{ marginTop: '40px' }}>
-        <h2>Sélectionnez un framework :</h2>
+        <h2>1. Composant basique avec Downshift :</h2>
         <SelectableInput
           items={mockItems}
           placeholder="Tapez pour rechercher un framework..."
           onSelectionChange={(item) => {
             setSelectedFramework(item)
-            console.log('Framework sélectionné:', item)
+            console.log('Framework sélectionné (basique):', item)
           }}
         />
         
@@ -47,45 +49,164 @@ function App() {
           </div>
         )}
       </div>
+
+      <div style={{ marginTop: '40px' }}>
+        <h2>2. Composant avec Floating UI :</h2>
+        <FloatingSelectableInput
+          items={mockItems}
+          placeholder="Tapez pour rechercher un framework (avec Floating UI)..."
+          onSelectionChange={(item) => {
+            setSelectedFloatingFramework(item)
+            console.log('Framework sélectionné (Floating UI):', item)
+          }}
+        />
+        
+        {selectedFloatingFramework && (
+          <div style={{ 
+            marginTop: '20px', 
+            padding: '16px', 
+            backgroundColor: '#f0fdf4', 
+            borderRadius: '8px',
+            border: '1px solid #22c55e'
+          }}>
+            <strong>Framework sélectionné (Floating UI) :</strong> {selectedFloatingFramework.label}
+          </div>
+        )}
+      </div>
       
       <div style={{ marginTop: '40px' }}>
-        <h2>Test de la direction du menu :</h2>
+        <h2>Test des différentes configurations Floating UI :</h2>
         
-        <div style={{ marginBottom: '20px' }}>
-          <h3>Menu vers le bas (par défaut)</h3>
-          <SelectableInput
-            items={mockItems}
-            placeholder="Menu vers le bas..."
-            onSelectionChange={(item) => {
-              console.log('Sélection vers le bas:', item)
-            }}
-          />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+          <div>
+            <h3>Placement automatique</h3>
+            <FloatingSelectableInput
+              items={mockItems}
+              placeholder="Auto placement..."
+              placement="auto"
+              onSelectionChange={(item) => console.log('Auto:', item)}
+            />
+          </div>
+          
+          <div>
+            <h3>Toujours en bas</h3>
+            <FloatingSelectableInput
+              items={mockItems}
+              placeholder="Toujours en bas..."
+              placement="bottom"
+              enableFlip={false}
+              onSelectionChange={(item) => console.log('Bottom:', item)}
+            />
+          </div>
         </div>
 
-        <div style={{ marginBottom: '20px' }}>
-          <h3>Menu vers le haut</h3>
-          <SelectableInput
-            items={mockItems}
-            placeholder="Menu vers le haut..."
-            openDirection="up"
-            onSelectionChange={(item) => {
-              console.log('Sélection vers le haut:', item)
-            }}
-          />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+          <div>
+            <h3>Toujours en haut</h3>
+            <FloatingSelectableInput
+              items={mockItems}
+              placeholder="Toujours en haut..."
+              placement="top"
+              enableFlip={false}
+              onSelectionChange={(item) => console.log('Top:', item)}
+            />
+          </div>
+          
+          <div>
+            <h3>Avec flip activé</h3>
+            <FloatingSelectableInput
+              items={mockItems}
+              placeholder="Avec retournement..."
+              placement="bottom"
+              enableFlip={true}
+              onSelectionChange={(item) => console.log('Flip:', item)}
+            />
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div>
+            <h3>Sans portal</h3>
+            <FloatingSelectableInput
+              items={mockItems}
+              placeholder="Sans portal..."
+              portal={false}
+              onSelectionChange={(item) => console.log('No portal:', item)}
+            />
+          </div>
+          
+          <div>
+            <h3>Avec portal (par défaut)</h3>
+            <FloatingSelectableInput
+              items={mockItems}
+              placeholder="Avec portal..."
+              portal={true}
+              onSelectionChange={(item) => console.log('With portal:', item)}
+            />
+          </div>
         </div>
       </div>
 
       <div style={{ marginTop: '40px', fontSize: '14px', color: '#666' }}>
-        <h3>Fonctionnalités testées :</h3>
-        <ul>
-          <li>✅ Filtrage des éléments en temps réel</li>
-          <li>✅ Navigation au clavier (flèches haut/bas, Enter, Escape)</li>
-          <li>✅ Bouton pour ouvrir/fermer la liste</li>
-          <li>✅ Fermeture automatique lors de la sélection</li>
-          <li>✅ Mise en surbrillance de l'élément actif</li>
-          <li>✅ Animation d'ouverture/fermeture</li>
-          <li>🆕 Direction du menu contrôlée par prop (up/down)</li>
-        </ul>
+        <h3>Fonctionnalités comparées :</h3>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div>
+            <h4>Composant basique (SelectableInput)</h4>
+            <ul>
+              <li>✅ Filtrage des éléments en temps réel</li>
+              <li>✅ Navigation au clavier</li>
+              <li>✅ Bouton toggle</li>
+              <li>✅ Direction contrôlée par prop (up/down)</li>
+              <li>✅ CSS simple et prévisible</li>
+              <li>✅ Plus léger (moins de dépendances)</li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4>Composant Floating UI (FloatingSelectableInput)</h4>
+            <ul>
+              <li>✅ Toutes les fonctionnalités du basique</li>
+              <li>🆕 Positionnement intelligent automatique</li>
+              <li>🆕 Gestion des collisions avec les bords</li>
+              <li>🆕 Redimensionnement selon l'espace disponible</li>
+              <li>🆕 Portal pour éviter les problèmes de z-index</li>
+              <li>🆕 Middleware personnalisables</li>
+              <li>🆕 Animation adaptée au placement</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Section pour tester le positionnement en bas de page */}
+      <div style={{ marginTop: '40px', paddingTop: '40px', borderTop: '2px dashed #e2e8f0' }}>
+        <h2>Test en bas de page (pour tester le flip automatique) :</h2>
+        <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
+          Ces composants devraient automatiquement s'ouvrir vers le haut quand il n'y a pas assez d'espace en bas.
+        </p>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '100px' }}>
+          <div>
+            <h3>Composant basique (direction manuelle)</h3>
+            <SelectableInput
+              items={mockItems}
+              placeholder="Direction manuelle vers le haut..."
+              openDirection="up"
+              onSelectionChange={(item) => console.log('Manual up:', item)}
+            />
+          </div>
+          
+          <div>
+            <h3>Floating UI (flip automatique)</h3>
+            <FloatingSelectableInput
+              items={mockItems}
+              placeholder="Flip automatique..."
+              placement="bottom"
+              enableFlip={true}
+              onSelectionChange={(item) => console.log('Auto flip:', item)}
+            />
+          </div>
+        </div>
       </div>
     </div>
   )
