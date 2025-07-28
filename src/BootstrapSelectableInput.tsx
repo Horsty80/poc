@@ -22,6 +22,7 @@ interface BootstrapSelectableInputProps {
   items: Item[]
   placeholder?: string
   onSelectionChange?: (item: Item | null) => void
+  onMultiSelectionChange?: (items: Item[]) => void
   placement?: 'top' | 'bottom' | 'auto'
   enableFlip?: boolean
   portal?: boolean
@@ -32,12 +33,15 @@ interface BootstrapSelectableInputProps {
   isInvalid?: boolean // État d'erreur
   errorMessage?: string // Message d'erreur
   appendTo?: string // Sélecteur CSS pour l'élément de référence (ex: "#my-container", ".my-class")
+  multiSelect?: boolean // Mode sélection multiple
+  maxSelections?: number // Nombre maximum de sélections (optionnel)
 }
 
 export function BootstrapSelectableInput({ 
   items, 
-  placeholder = "Sélectionnez un élément...", 
+  placeholder, 
   onSelectionChange,
+  onMultiSelectionChange,
   placement = 'auto',
   enableFlip = true,
   portal = true,
@@ -47,10 +51,20 @@ export function BootstrapSelectableInput({
   helpText,
   isInvalid = false,
   errorMessage,
-  appendTo
+  appendTo,
+  multiSelect = false,
+  maxSelections
 }: BootstrapSelectableInputProps) {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
+  const [selectedItems, setSelectedItems] = useState<Item[]>([])
   const [inputValue, setInputValue] = useState('')
+
+  // Placeholder dynamique basé sur le mode
+  const effectivePlaceholder = placeholder || (multiSelect 
+    ? (selectedItems.length > 0 
+        ? `${selectedItems.length} élément(s) sélectionné(s)` 
+        : "Sélectionnez des éléments...")
+    : "Sélectionnez un élément...")
 
   // Filtrer les éléments selon la saisie
   const filteredItems = items.filter(item =>
@@ -100,17 +114,57 @@ export function BootstrapSelectableInput({
     getToggleButtonProps,
   } = useCombobox({
     items: filteredItems,
-    selectedItem,
+    selectedItem: multiSelect ? null : selectedItem,
     inputValue,
     onInputValueChange: ({ inputValue: newInputValue }) => {
       setInputValue(newInputValue || '')
     },
     onSelectedItemChange: ({ selectedItem: newSelectedItem }) => {
-      setSelectedItem(newSelectedItem || null)
-      onSelectionChange?.(newSelectedItem || null)
+      if (multiSelect) {
+        if (newSelectedItem) {
+          handleMultiSelect(newSelectedItem)
+        }
+      } else {
+        setSelectedItem(newSelectedItem || null)
+        onSelectionChange?.(newSelectedItem || null)
+      }
     },
     itemToString: (item) => item?.label || '',
   })
+
+  // Gestion de la sélection multiple
+  const handleMultiSelect = (item: Item) => {
+    const isAlreadySelected = selectedItems.some(selected => selected.id === item.id)
+    let newSelectedItems: Item[]
+
+    if (isAlreadySelected) {
+      // Désélectionner l'élément
+      newSelectedItems = selectedItems.filter(selected => selected.id !== item.id)
+    } else {
+      // Vérifier la limite maximale si définie
+      if (maxSelections && selectedItems.length >= maxSelections) {
+        return // Ne pas ajouter si la limite est atteinte
+      }
+      // Ajouter l'élément
+      newSelectedItems = [...selectedItems, item]
+    }
+
+    setSelectedItems(newSelectedItems)
+    onMultiSelectionChange?.(newSelectedItems)
+  }
+
+  // Fonction pour supprimer un élément sélectionné
+  const removeSelectedItem = (itemToRemove: Item) => {
+    const newSelectedItems = selectedItems.filter(item => item.id !== itemToRemove.id)
+    setSelectedItems(newSelectedItems)
+    onMultiSelectionChange?.(newSelectedItems)
+  }
+
+  // Fonction pour vider toutes les sélections
+  const clearAllSelections = () => {
+    setSelectedItems([])
+    onMultiSelectionChange?.([])
+  }
 
   // Classes Bootstrap pour l'input
   const inputClasses = [
@@ -143,33 +197,50 @@ export function BootstrapSelectableInput({
           Aucun résultat pour "{inputValue}"
         </li>
       )}
-      {isOpen && filteredItems.map((item, index) => (
-        <li
-          key={item.id}
-          {...getItemProps({
-            item,
-            index,
-            className: `list-group-item list-group-item-action d-flex justify-content-between align-items-start ${
-              highlightedIndex === index ? `active` : ''
-            } ${selectedItem?.id === item.id ? 'list-group-item-success' : ''}`,
-          })}
-          style={{ cursor: 'pointer' }}
-        >
-          <div className="ms-2 me-auto">
-            <div className="fw-bold">{item.label}</div>
-            {item.description && (
-              <small className={highlightedIndex === index ? 'text-white-50' : 'text-muted'}>
-                {item.description}
-              </small>
-            )}
-          </div>
-          {selectedItem?.id === item.id && (
-            <span className="badge bg-success rounded-pill">
-              <i className="bi bi-check-lg"></i>
-            </span>
-          )}
+      {isOpen && multiSelect && maxSelections && selectedItems.length >= maxSelections && (
+        <li className="list-group-item text-warning fst-italic">
+          <i className="bi bi-exclamation-triangle me-2"></i>
+          Limite de sélection atteinte ({maxSelections} maximum)
         </li>
-      ))}
+      )}
+      {isOpen && filteredItems.map((item, index) => {
+        const isSelected = multiSelect 
+          ? selectedItems.some(selected => selected.id === item.id)
+          : selectedItem?.id === item.id
+        
+        return (
+          <li
+            key={item.id}
+            {...getItemProps({
+              item,
+              index,
+              className: `list-group-item list-group-item-action d-flex justify-content-between align-items-start ${
+                highlightedIndex === index ? `active` : ''
+              } ${isSelected ? 'list-group-item-success' : ''}`,
+            })}
+            style={{ cursor: 'pointer' }}
+          >
+            <div className="ms-2 me-auto">
+              <div className="fw-bold">
+                {multiSelect && (
+                  <i className={`bi ${isSelected ? 'bi-check-square-fill' : 'bi-square'} me-2`}></i>
+                )}
+                {item.label}
+              </div>
+              {item.description && (
+                <small className={highlightedIndex === index ? 'text-white-50' : 'text-muted'}>
+                  {item.description}
+                </small>
+              )}
+            </div>
+            {isSelected && (
+              <span className="badge bg-success rounded-pill">
+                <i className="bi bi-check-lg"></i>
+              </span>
+            )}
+          </li>
+        )
+      })}
     </ul>
   )
 
@@ -185,7 +256,7 @@ export function BootstrapSelectableInput({
       <div className="input-group" ref={appendTo ? undefined : refs.setReference}>
         <input
           {...getInputProps({
-            placeholder,
+            placeholder: effectivePlaceholder,
             className: inputClasses,
           })}
         />
@@ -201,7 +272,46 @@ export function BootstrapSelectableInput({
             <i className="bi bi-chevron-down"></i>
           )}
         </button>
+        {multiSelect && selectedItems.length > 0 && (
+          <button
+            type="button"
+            onClick={clearAllSelections}
+            className="btn btn-outline-secondary"
+            aria-label="clear all selections"
+            title="Effacer toutes les sélections"
+          >
+            <i className="bi bi-x-lg"></i>
+          </button>
+        )}
       </div>
+      
+      {/* Affichage des éléments sélectionnés en mode multiselect */}
+      {multiSelect && selectedItems.length > 0 && (
+        <div className="mt-2">
+          <div className="d-flex flex-wrap gap-1">
+            {selectedItems.map((item) => (
+              <span key={item.id} className={`badge bg-${variant} d-flex align-items-center gap-1`}>
+                {item.label}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    removeSelectedItem(item)
+                  }}
+                  className="btn-close btn-close-white btn-sm"
+                  aria-label={`Supprimer ${item.label}`}
+                  style={{ fontSize: '0.6em' }}
+                ></button>
+              </span>
+            ))}
+          </div>
+          {maxSelections && (
+            <small className="text-muted mt-1 d-block">
+              {selectedItems.length}/{maxSelections} sélection(s)
+            </small>
+          )}
+        </div>
+      )}
       
       {/* Messages d'aide et d'erreur */}
       {(helpText || errorMessage) && (

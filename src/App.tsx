@@ -12,6 +12,8 @@ const mockItemsWithDescriptions = [
 
 function App() {
   const [selectedBootstrapFramework, setSelectedBootstrapFramework] = useState<any>(null)
+  const [selectedMultipleFrameworks, setSelectedMultipleFrameworks] = useState<any[]>([])
+  const [selectedLimitedFrameworks, setSelectedLimitedFrameworks] = useState<any[]>([])
 
   return (
     <div className="container-fluid" style={{ padding: '40px' }}>
@@ -126,6 +128,105 @@ function App() {
                       errorMessage="Erreur critique"
                     />
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Nouvelle section pour le mode multiselect */}
+      <div className="row mb-5">
+        <div className="col-12">
+          <div className="card border-success">
+            <div className="card-header bg-success text-white">
+              <h2 className="card-title mb-0">
+                <i className="bi bi-check2-square me-2"></i>
+                Mode Sélection Multiple
+              </h2>
+            </div>
+            <div className="card-body">
+              <div className="row">
+                <div className="col-md-6">
+                  <h5>Sélection multiple libre</h5>
+                  <BootstrapSelectableInput
+                    items={mockItemsWithDescriptions}
+                    placeholder="Sélectionnez plusieurs frameworks..."
+                    label="Frameworks (sélection multiple)"
+                    helpText="Vous pouvez sélectionner autant de frameworks que vous voulez"
+                    variant="success"
+                    multiSelect={true}
+                    onMultiSelectionChange={(items) => {
+                      setSelectedMultipleFrameworks(items)
+                      console.log('Frameworks sélectionnés:', items)
+                    }}
+                  />
+                </div>
+                <div className="col-md-6">
+                  {selectedMultipleFrameworks.length > 0 && (
+                    <div className="alert alert-success" role="alert">
+                      <h4 className="alert-heading">
+                        <i className="bi bi-check-circle-fill me-2"></i>
+                        Frameworks sélectionnés ({selectedMultipleFrameworks.length})
+                      </h4>
+                      <ul className="mb-0">
+                        {selectedMultipleFrameworks.map((framework) => (
+                          <li key={framework.id}>
+                            <strong>{framework.label}</strong>
+                            {framework.description && (
+                              <span className="text-muted"> - {framework.description}</span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <hr className="my-4" />
+              
+              <div className="row">
+                <div className="col-md-6">
+                  <h5>Sélection multiple avec limite</h5>
+                  <BootstrapSelectableInput
+                    items={mockItemsWithDescriptions}
+                    placeholder="Maximum 3 frameworks..."
+                    label="Frameworks (max 3)"
+                    helpText="Vous ne pouvez sélectionner que 3 frameworks maximum"
+                    variant="warning"
+                    multiSelect={true}
+                    maxSelections={3}
+                    onMultiSelectionChange={(items) => {
+                      setSelectedLimitedFrameworks(items)
+                      console.log('Frameworks limités sélectionnés:', items)
+                    }}
+                  />
+                </div>
+                <div className="col-md-6">
+                  {selectedLimitedFrameworks.length > 0 && (
+                    <div className="alert alert-warning" role="alert">
+                      <h4 className="alert-heading">
+                        <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                        Sélection limitée ({selectedLimitedFrameworks.length}/3)
+                      </h4>
+                      <ul className="mb-0">
+                        {selectedLimitedFrameworks.map((framework) => (
+                          <li key={framework.id}>
+                            <strong>{framework.label}</strong>
+                          </li>
+                        ))}
+                      </ul>
+                      {selectedLimitedFrameworks.length >= 3 && (
+                        <p className="mt-2 mb-0">
+                          <small className="text-warning">
+                            <i className="bi bi-info-circle me-1"></i>
+                            Limite atteinte ! Vous devez supprimer un élément pour en ajouter un autre.
+                          </small>
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
