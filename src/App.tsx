@@ -155,7 +155,7 @@ function App() {
                     label="Frameworks (sélection multiple)"
                     helpText="Vous pouvez sélectionner autant de frameworks que vous voulez"
                     variant="success"
-                    multiSelect={true}
+                    itemSelection="multiple"
                     onMultiSelectionChange={(items) => {
                       setSelectedMultipleFrameworks(items)
                       console.log('Frameworks sélectionnés:', items)
@@ -195,7 +195,7 @@ function App() {
                     label="Frameworks (max 3)"
                     helpText="Vous ne pouvez sélectionner que 3 frameworks maximum"
                     variant="warning"
-                    multiSelect={true}
+                    itemSelection="multiple"
                     maxSelections={3}
                     onMultiSelectionChange={(items) => {
                       setSelectedLimitedFrameworks(items)

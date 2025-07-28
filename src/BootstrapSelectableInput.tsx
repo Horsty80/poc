@@ -33,8 +33,8 @@ interface BootstrapSelectableInputProps {
   isInvalid?: boolean // État d'erreur
   errorMessage?: string // Message d'erreur
   appendTo?: string // Sélecteur CSS pour l'élément de référence (ex: "#my-container", ".my-class")
-  multiSelect?: boolean // Mode sélection multiple
-  maxSelections?: number // Nombre maximum de sélections (optionnel)
+  itemSelection?: 'single' | 'multiple' // Mode de sélection
+  maxSelections?: number // Nombre maximum de sélections (optionnel, uniquement pour 'multiple')
 }
 
 export function BootstrapSelectableInput({ 
@@ -52,15 +52,16 @@ export function BootstrapSelectableInput({
   isInvalid = false,
   errorMessage,
   appendTo,
-  multiSelect = false,
+  itemSelection = 'single',
   maxSelections
 }: BootstrapSelectableInputProps) {
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null)
-  const [selectedItems, setSelectedItems] = useState<Item[]>([])
+  // États de sélection - en fonction du mode, seul l'un des deux est utilisé
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null) // Utilisé uniquement en mode 'single'
+  const [selectedItems, setSelectedItems] = useState<Item[]>([]) // Utilisé uniquement en mode 'multiple'
   const [inputValue, setInputValue] = useState('')
 
   // Placeholder dynamique basé sur le mode
-  const effectivePlaceholder = placeholder || (multiSelect 
+  const effectivePlaceholder = placeholder || (itemSelection === 'multiple' 
     ? (selectedItems.length > 0 
         ? `${selectedItems.length} élément(s) sélectionné(s)` 
         : "Sélectionnez des éléments...")
@@ -114,17 +115,20 @@ export function BootstrapSelectableInput({
     getToggleButtonProps,
   } = useCombobox({
     items: filteredItems,
-    selectedItem: multiSelect ? null : selectedItem,
+    // En mode 'single': Downshift a besoin de connaître l'élément sélectionné pour le highlighting et la navigation
+    // En mode 'multiple': Pas d'élément unique sélectionné, donc null
+    selectedItem: itemSelection === 'single' ? selectedItem : null,
     inputValue,
     onInputValueChange: ({ inputValue: newInputValue }) => {
       setInputValue(newInputValue || '')
     },
     onSelectedItemChange: ({ selectedItem: newSelectedItem }) => {
-      if (multiSelect) {
+      if (itemSelection === 'multiple') {
         if (newSelectedItem) {
           handleMultiSelect(newSelectedItem)
         }
       } else {
+        // Mode single
         setSelectedItem(newSelectedItem || null)
         onSelectionChange?.(newSelectedItem || null)
       }
@@ -197,14 +201,14 @@ export function BootstrapSelectableInput({
           Aucun résultat pour "{inputValue}"
         </li>
       )}
-      {isOpen && multiSelect && maxSelections && selectedItems.length >= maxSelections && (
+      {isOpen && itemSelection === 'multiple' && maxSelections && selectedItems.length >= maxSelections && (
         <li className="list-group-item text-warning fst-italic">
           <i className="bi bi-exclamation-triangle me-2"></i>
           Limite de sélection atteinte ({maxSelections} maximum)
         </li>
       )}
       {isOpen && filteredItems.map((item, index) => {
-        const isSelected = multiSelect 
+        const isSelected = itemSelection === 'multiple' 
           ? selectedItems.some(selected => selected.id === item.id)
           : selectedItem?.id === item.id
         
@@ -222,7 +226,7 @@ export function BootstrapSelectableInput({
           >
             <div className="ms-2 me-auto">
               <div className="fw-bold">
-                {multiSelect && (
+                {itemSelection === 'multiple' && (
                   <i className={`bi ${isSelected ? 'bi-check-square-fill' : 'bi-square'} me-2`}></i>
                 )}
                 {item.label}
@@ -272,7 +276,7 @@ export function BootstrapSelectableInput({
             <i className="bi bi-chevron-down"></i>
           )}
         </button>
-        {multiSelect && selectedItems.length > 0 && (
+        {itemSelection === 'multiple' && selectedItems.length > 0 && (
           <button
             type="button"
             onClick={clearAllSelections}
@@ -286,7 +290,7 @@ export function BootstrapSelectableInput({
       </div>
       
       {/* Affichage des éléments sélectionnés en mode multiselect */}
-      {multiSelect && selectedItems.length > 0 && (
+      {itemSelection === 'multiple' && selectedItems.length > 0 && (
         <div className="mt-2">
           <div className="d-flex flex-wrap gap-1">
             {selectedItems.map((item) => (
