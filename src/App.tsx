@@ -132,6 +132,130 @@ function App() {
           </div>
         </div>
       </div>
+
+      {/* Nouvelle section pour démontrer appendTo */}
+      <div className="row mb-5">
+        <div className="col-12">
+          <div className="card border-info">
+            <div className="card-header bg-info text-white">
+              <h2 className="card-title mb-0">
+                <i className="bi bi-pin-map me-2"></i>
+                Démonstration de appendTo
+              </h2>
+            </div>
+            <div className="card-body">
+              <p className="mb-4">
+                La props <code>appendTo</code> permet de spécifier un élément de référence personnalisé 
+                pour le positionnement du menu. Le menu se positionnera par rapport à cet élément 
+                plutôt que par rapport à l'input.
+              </p>
+              
+              <div className="row">
+                <div className="col-md-8">
+                  <div className="alert alert-light border">
+                    <h5 className="alert-heading">Zone de référence personnalisée</h5>
+                    <p>
+                      Ce div avec l'id <code>#custom-reference</code> sert d'élément de référence 
+                      pour le menu du composant ci-dessous.
+                    </p>
+                    <div 
+                      id="custom-reference" 
+                      className="bg-primary text-white p-3 rounded text-center mb-3"
+                      style={{ cursor: 'pointer' }}
+                    >
+                      📍 Élément de référence personnalisé
+                      <br />
+                      <small>Le menu se positionnera par rapport à cette zone</small>
+                    </div>
+                    
+                    <BootstrapSelectableInput
+                      items={mockItemsWithDescriptions}
+                      placeholder="Menu positionné sur l'élément ci-dessus"
+                      label="Composant avec appendTo"
+                      helpText="Le menu se positionnera par rapport à l'élément bleu ci-dessus"
+                      variant="info"
+                      appendTo="#custom-reference"
+                      placement="bottom"
+                      onSelectionChange={(item) => {
+                        console.log('Sélection avec appendTo:', item)
+                      }}
+                    />
+                  </div>
+                </div>
+                
+                <div className="col-md-4">
+                  <div className="card bg-light">
+                    <div className="card-body">
+                      <h6 className="card-title">
+                        <i className="bi bi-code-slash me-2"></i>
+                        Code utilisé
+                      </h6>
+                      <pre className="small mb-0">
+{`<BootstrapSelectableInput
+  items={items}
+  appendTo="#custom-reference"
+  placement="bottom"
+  // ... autres props
+/>`}
+                      </pre>
+                    </div>
+                  </div>
+                  
+                  <div className="card bg-light mt-3">
+                    <div className="card-body">
+                      <h6 className="card-title">
+                        <i className="bi bi-info-circle me-2"></i>
+                        Types de sélecteurs
+                      </h6>
+                      <ul className="small mb-0">
+                        <li><code>#myId</code> - Par ID</li>
+                        <li><code>.myClass</code> - Par classe</li>
+                        <li><code>[data-ref]</code> - Par attribut</li>
+                        <li><code>div.container</code> - Complexe</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <hr className="my-4" />
+              
+              <div className="row">
+                <div className="col-md-6">
+                  <h5>Exemple avec sélecteur de classe</h5>
+                  <div className="position-relative">
+                    <div className="custom-ref-class bg-success text-white p-2 rounded mb-2 text-center">
+                      🎯 Référence par classe CSS
+                    </div>
+                    <BootstrapSelectableInput
+                      items={mockItemsWithDescriptions}
+                      placeholder="Menu positionné sur l'élément vert"
+                      label="Avec sélecteur de classe"
+                      variant="success"
+                      appendTo=".custom-ref-class"
+                      placement="top"
+                    />
+                  </div>
+                </div>
+                
+                <div className="col-md-6">
+                  <h5>Comparaison sans appendTo</h5>
+                  <div className="bg-warning text-dark p-2 rounded mb-2 text-center">
+                    ⚡ Élément décoratif (ignoré)
+                  </div>
+                  <BootstrapSelectableInput
+                    items={mockItemsWithDescriptions}
+                    placeholder="Menu positionné normalement"
+                    label="Sans appendTo"
+                    variant="warning"
+                    placement="top"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

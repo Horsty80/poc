@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCombobox } from 'downshift'
 import {
   useFloating,
@@ -31,6 +31,7 @@ interface BootstrapSelectableInputProps {
   helpText?: string // Texte d'aide
   isInvalid?: boolean // État d'erreur
   errorMessage?: string // Message d'erreur
+  appendTo?: string // Sélecteur CSS pour l'élément de référence (ex: "#my-container", ".my-class")
 }
 
 export function BootstrapSelectableInput({ 
@@ -45,7 +46,8 @@ export function BootstrapSelectableInput({
   label,
   helpText,
   isInvalid = false,
-  errorMessage
+  errorMessage,
+  appendTo
 }: BootstrapSelectableInputProps) {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
   const [inputValue, setInputValue] = useState('')
@@ -77,6 +79,16 @@ export function BootstrapSelectableInput({
       }),
     ].filter(Boolean),
   })
+
+  // Gérer l'élément de référence personnalisé
+  useEffect(() => {
+    if (appendTo && refs.setReference) {
+      const targetElement = document.querySelector(appendTo)
+      if (targetElement) {
+        refs.setReference(targetElement as Element)
+      }
+    }
+  }, [appendTo, refs.setReference])
 
   // Configuration de Downshift
   const {
@@ -170,7 +182,7 @@ export function BootstrapSelectableInput({
         </label>
       )}
       
-      <div className="input-group" ref={refs.setReference}>
+      <div className="input-group" ref={appendTo ? undefined : refs.setReference}>
         <input
           {...getInputProps({
             placeholder,
