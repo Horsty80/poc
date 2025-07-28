@@ -163,6 +163,24 @@ function App() {
                   />
                 </div>
                 <div className="col-md-6">
+                  <h5>Sélection multiple en mode résumé</h5>
+                  <BootstrapSelectableInput
+                    items={mockItemsWithDescriptions}
+                    placeholder="Mode résumé par défaut..."
+                    label="Frameworks (mode résumé)"
+                    helpText="Affichage en mode résumé par défaut, utilisez le bouton pour basculer"
+                    variant="info"
+                    itemSelection="multiple"
+                    summaryMode={true}
+                    onMultiSelectionChange={(items) => {
+                      console.log('Frameworks en mode résumé:', items)
+                    }}
+                  />
+                </div>
+              </div>
+              
+              <div className="row mt-4">
+                <div className="col-md-12">
                   {selectedMultipleFrameworks.length > 0 && (
                     <div className="alert alert-success" role="alert">
                       <h4 className="alert-heading">

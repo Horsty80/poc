@@ -35,6 +35,7 @@ interface BootstrapSelectableInputProps {
   appendTo?: string // Sélecteur CSS pour l'élément de référence (ex: "#my-container", ".my-class")
   itemSelection?: 'single' | 'multiple' // Mode de sélection
   maxSelections?: number // Nombre maximum de sélections (optionnel, uniquement pour 'multiple')
+  summaryMode?: boolean // Mode résumé pour l'affichage des sélections multiples
 }
 
 export function BootstrapSelectableInput({ 
@@ -53,18 +54,18 @@ export function BootstrapSelectableInput({
   errorMessage,
   appendTo,
   itemSelection = 'single',
-  maxSelections
+  maxSelections,
+  summaryMode = false
 }: BootstrapSelectableInputProps) {
   // États de sélection - en fonction du mode, seul l'un des deux est utilisé
   const [selectedItem, setSelectedItem] = useState<Item | null>(null) // Utilisé uniquement en mode 'single'
   const [selectedItems, setSelectedItems] = useState<Item[]>([]) // Utilisé uniquement en mode 'multiple'
   const [inputValue, setInputValue] = useState('')
+  const [internalSummaryMode, setInternalSummaryMode] = useState(summaryMode) // État interne pour le toggle
 
-  // Placeholder dynamique basé sur le mode
+  // Placeholder statique
   const effectivePlaceholder = placeholder || (itemSelection === 'multiple' 
-    ? (selectedItems.length > 0 
-        ? `${selectedItems.length} élément(s) sélectionné(s)` 
-        : "Sélectionnez des éléments...")
+    ? "Sélectionnez des éléments..."
     : "Sélectionnez un élément...")
 
   // Filtrer les éléments selon la saisie
@@ -170,13 +171,6 @@ export function BootstrapSelectableInput({
     onMultiSelectionChange?.([])
   }
 
-  // Classes Bootstrap pour l'input
-  const inputClasses = [
-    'form-control',
-    inputSize && `form-control-${inputSize}`,
-    isInvalid && 'is-invalid'
-  ].filter(Boolean).join(' ')
-
   // Classes Bootstrap pour le bouton
   const buttonClasses = [
     'btn',
@@ -258,12 +252,50 @@ export function BootstrapSelectableInput({
       )}
       
       <div className="input-group" ref={appendTo ? undefined : refs.setReference}>
-        <input
-          {...getInputProps({
-            placeholder: effectivePlaceholder,
-            className: inputClasses,
-          })}
-        />
+        <div className={`form-control p-1 d-flex flex-wrap align-items-center gap-1 ${isInvalid ? 'is-invalid' : ''}`} 
+             style={{ minHeight: inputSize === 'lg' ? '48px' : inputSize === 'sm' ? '31px' : '38px' }}>
+          
+          {/* Badges des éléments sélectionnés en mode multiple */}
+          {itemSelection === 'multiple' && selectedItems.length > 0 && (
+            <>
+              {internalSummaryMode ? (
+                <span className={`badge bg-${variant} me-1`}>
+                  {selectedItems.length} élément{selectedItems.length > 1 ? 's' : ''} sélectionné{selectedItems.length > 1 ? 's' : ''}
+                </span>
+              ) : (
+                selectedItems.map((item) => (
+                  <span key={item.id} className={`badge bg-${variant} d-flex align-items-center gap-1 me-1`} style={{ fontSize: '0.75em' }}>
+                    {item.label}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        removeSelectedItem(item)
+                      }}
+                      className="btn-close btn-close-white"
+                      aria-label={`Supprimer ${item.label}`}
+                      style={{ fontSize: '0.5em' }}
+                    ></button>
+                  </span>
+                ))
+              )}
+            </>
+          )}
+          
+          {/* Input de recherche */}
+          <input
+            {...getInputProps({
+              placeholder: (itemSelection === 'multiple' && selectedItems.length > 0) ? '' : effectivePlaceholder,
+              className: 'border-0 outline-0 flex-grow-1',
+              style: { 
+                minWidth: '120px',
+                background: 'transparent',
+                boxShadow: 'none'
+              }
+            })}
+          />
+        </div>
+        
         <button
           type="button"
           {...getToggleButtonProps()}
@@ -276,44 +308,40 @@ export function BootstrapSelectableInput({
             <i className="bi bi-chevron-down"></i>
           )}
         </button>
+        
         {itemSelection === 'multiple' && selectedItems.length > 0 && (
-          <button
-            type="button"
-            onClick={clearAllSelections}
-            className="btn btn-outline-secondary"
-            aria-label="clear all selections"
-            title="Effacer toutes les sélections"
-          >
-            <i className="bi bi-x-lg"></i>
-          </button>
+          <>
+            {/* Bouton pour basculer le mode summary */}
+            <button
+              type="button"
+              onClick={() => setInternalSummaryMode(!internalSummaryMode)}
+              className="btn btn-outline-info"
+              aria-label="toggle summary mode"
+              title={internalSummaryMode ? "Afficher les détails" : "Afficher le résumé"}
+            >
+              <i className={`bi ${internalSummaryMode ? 'bi-list-ul' : 'bi-card-text'}`}></i>
+            </button>
+            
+            {/* Bouton pour effacer toutes les sélections */}
+            <button
+              type="button"
+              onClick={clearAllSelections}
+              className="btn btn-outline-secondary"
+              aria-label="clear all selections"
+              title="Effacer toutes les sélections"
+            >
+              <i className="bi bi-x-lg"></i>
+            </button>
+          </>
         )}
       </div>
       
-      {/* Affichage des éléments sélectionnés en mode multiselect */}
-      {itemSelection === 'multiple' && selectedItems.length > 0 && (
-        <div className="mt-2">
-          <div className="d-flex flex-wrap gap-1">
-            {selectedItems.map((item) => (
-              <span key={item.id} className={`badge bg-${variant} d-flex align-items-center gap-1`}>
-                {item.label}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    removeSelectedItem(item)
-                  }}
-                  className="btn-close btn-close-white btn-sm"
-                  aria-label={`Supprimer ${item.label}`}
-                  style={{ fontSize: '0.6em' }}
-                ></button>
-              </span>
-            ))}
-          </div>
-          {maxSelections && (
-            <small className="text-muted mt-1 d-block">
-              {selectedItems.length}/{maxSelections} sélection(s)
-            </small>
-          )}
+      {/* Indicateur de limite de sélection */}
+      {itemSelection === 'multiple' && maxSelections && selectedItems.length > 0 && (
+        <div className="mt-1">
+          <small className="text-muted">
+            {selectedItems.length}/{maxSelections} sélection(s)
+          </small>
         </div>
       )}
       

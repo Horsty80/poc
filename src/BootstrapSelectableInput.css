@@ -4,6 +4,26 @@
   margin-bottom: 1rem;
 }
 
+/* Input personnalisé avec badges */
+.bootstrap-selectable-container .form-control {
+  cursor: text;
+}
+
+.bootstrap-selectable-container .form-control:focus-within {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.bootstrap-selectable-container .form-control input {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.bootstrap-selectable-container .form-control input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* Menu flottant avec styles Bootstrap */
 .bootstrap-floating-menu {
   opacity: 0;
