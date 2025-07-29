@@ -14,6 +14,21 @@ function App() {
   const [selectedBootstrapFramework, setSelectedBootstrapFramework] = useState<any>(null)
   const [selectedMultipleFrameworks, setSelectedMultipleFrameworks] = useState<any[]>([])
   const [selectedLimitedFrameworks, setSelectedLimitedFrameworks] = useState<any[]>([])
+  const [dynamicItems, setDynamicItems] = useState(mockItemsWithDescriptions)
+
+  // Fonction pour créer un nouveau tag
+  const handleCreateTag = (label: string) => {
+    const newItem = {
+      id: `custom-${Date.now()}`, // ID unique basé sur le timestamp
+      label: label,
+      description: `Tag créé par l'utilisateur`
+    }
+    
+    // Ajouter le nouvel élément à la liste
+    setDynamicItems(prev => [...prev, newItem])
+    
+    return newItem
+  }
 
   return (
     <div className="container-fluid" style={{ padding: '40px' }}>
@@ -48,6 +63,21 @@ function App() {
                     onSelectionChange={(item) => {
                       setSelectedBootstrapFramework(item)
                       console.log('Framework sélectionné (Bootstrap):', item)
+                    }}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <BootstrapSelectableInput
+                    items={dynamicItems}
+                    placement='bottom'
+                    placeholder="Créer un nouveau framework..."
+                    label="Framework personnalisé (mode single)"
+                    helpText="Tapez le nom d'un nouveau framework et appuyez sur Entrée pour le créer"
+                    variant="success"
+                    createTag={true}
+                    onCreateTag={handleCreateTag}
+                    onSelectionChange={(item) => {
+                      console.log('Framework créé et sélectionné:', item)
                     }}
                   />
                 </div>
@@ -196,6 +226,25 @@ function App() {
                   />
                 </div>
                 <div className="col-md-6">
+                  <h5>Créer de nouveaux tags</h5>
+                  <BootstrapSelectableInput
+                    items={dynamicItems}
+                    placeholder="Tapez pour créer un nouveau tag..."
+                    label="Tags personnalisés"
+                    helpText="Tapez du texte et appuyez sur Entrée ou cliquez sur 'Créer' pour ajouter un nouveau tag"
+                    variant="success"
+                    itemSelection="multiple"
+                    createTag={true}
+                    onCreateTag={handleCreateTag}
+                    onMultiSelectionChange={(items) => {
+                      console.log('Tags sélectionnés:', items)
+                    }}
+                  />
+                </div>
+              </div>
+              
+              <div className="row mt-4">
+                <div className="col-md-6">
                   <h5>Avec limite + Select All</h5>
                   <BootstrapSelectableInput
                     items={mockItemsWithDescriptions}
@@ -208,6 +257,25 @@ function App() {
                     canSelectAll={true}
                     onMultiSelectionChange={(items) => {
                       console.log('Frameworks limités avec Select All:', items)
+                    }}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <h5>Toutes les fonctionnalités</h5>
+                  <BootstrapSelectableInput
+                    items={dynamicItems}
+                    placeholder="Exemple complet..."
+                    label="Exemple avec toutes les options"
+                    helpText="Select All + Create Tag + Limite + Mode résumé"
+                    variant="info"
+                    itemSelection="multiple"
+                    maxSelections={5}
+                    canSelectAll={true}
+                    createTag={true}
+                    summaryMode={true}
+                    onCreateTag={handleCreateTag}
+                    onMultiSelectionChange={(items) => {
+                      console.log('Exemple complet:', items)
                     }}
                   />
                 </div>

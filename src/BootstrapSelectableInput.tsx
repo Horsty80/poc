@@ -38,6 +38,8 @@ interface BaseProps {
 interface SingleSelectionProps extends BaseProps {
   itemSelection?: 'single'
   onSelectionChange?: (item: Item | null) => void
+  createTag?: boolean // Option pour créer de nouveaux éléments à la volée (défaut: false)
+  onCreateTag?: (label: string) => Item | Promise<Item> // Callback pour créer un nouvel élément
   // Ces propriétés ne sont pas autorisées en mode single
   onMultiSelectionChange?: never
   maxSelections?: never
@@ -52,6 +54,8 @@ interface MultipleSelectionProps extends BaseProps {
   maxSelections?: number // Nombre maximum de sélections (optionnel, uniquement pour 'multiple')
   summaryMode?: boolean // Mode résumé pour l'affichage des sélections multiples
   canSelectAll?: boolean // Option pour sélectionner tous les éléments (défaut: false)
+  createTag?: boolean // Option pour créer de nouveaux éléments à la volée (défaut: false)
+  onCreateTag?: (label: string) => Item | Promise<Item> // Callback pour créer un nouvel élément
   // Cette propriété n'est pas autorisée en mode multiple
   onSelectionChange?: never
 }
@@ -77,7 +81,9 @@ export function BootstrapSelectableInput({
   itemSelection = 'single',
   maxSelections,
   summaryMode = false,
-  canSelectAll = false
+  canSelectAll = false,
+  createTag = false,
+  onCreateTag
 }: BootstrapSelectableInputProps) {
   // États de sélection - en fonction du mode, seul l'un des deux est utilisé
   const [selectedItem, setSelectedItem] = useState<Item | null>(null) // Utilisé uniquement en mode 'single'
@@ -218,6 +224,51 @@ export function BootstrapSelectableInput({
     )
   }
 
+  // Fonction pour créer un nouveau tag
+  const createNewTag = async (label: string) => {
+    if (!onCreateTag || !createTag) return
+
+    try {
+      const newItem = await onCreateTag(label.trim())
+      
+      if (itemSelection === 'multiple') {
+        // Mode multiple : ajouter aux sélections
+        const existsInSelected = selectedItems.some(item => item.id === newItem.id)
+        
+        if (!existsInSelected) {
+          // Vérifier la limite maximale si définie
+          if (maxSelections && selectedItems.length >= maxSelections) {
+            return // Ne pas ajouter si la limite est atteinte
+          }
+          
+          const newSelectedItems = [...selectedItems, newItem]
+          setSelectedItems(newSelectedItems)
+          onMultiSelectionChange?.(newSelectedItems)
+        }
+      } else {
+        // Mode single : sélectionner le nouvel élément
+        setSelectedItem(newItem)
+        onSelectionChange?.(newItem)
+      }
+      
+      // Vider l'input après création
+      setInputValue('')
+    } catch (error) {
+      console.error('Erreur lors de la création du tag:', error)
+    }
+  }
+
+  // Vérifier si l'input correspond exactement à un élément existant
+  const exactMatch = filteredItems.find(item => 
+    item.label.toLowerCase() === inputValue.toLowerCase().trim()
+  )
+
+  // Vérifier si on peut créer un nouveau tag
+  const canCreateNewTag = createTag && 
+    inputValue.trim().length > 0 && 
+    !exactMatch &&
+    (itemSelection === 'single' || !maxSelections || selectedItems.length < maxSelections)
+
   // Classes Bootstrap pour le bouton
   const buttonClasses = [
     'btn',
@@ -271,6 +322,23 @@ export function BootstrapSelectableInput({
             <i className={`bi ${areAllFilteredItemsSelected() ? 'bi-check-square-fill' : 'bi-square'} me-2`}></i>
             {areAllFilteredItemsSelected() ? 'Désélectionner tout' : 'Sélectionner tout'}
             {inputValue && ` (${filteredItems.length})`}
+          </button>
+        </li>
+      )}
+
+      {/* Option pour créer un nouveau tag */}
+      {isOpen && canCreateNewTag && (
+        <li className="list-group-item list-group-item-action border-bottom border-secondary">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              createNewTag(inputValue)
+            }}
+            className="btn btn-sm btn-outline-success w-100 d-flex align-items-center justify-content-center"
+          >
+            <i className="bi bi-plus-circle me-2"></i>
+            Créer "{inputValue.trim()}"
           </button>
         </li>
       )}
@@ -365,6 +433,13 @@ export function BootstrapSelectableInput({
                 minWidth: '120px',
                 background: 'transparent',
                 boxShadow: 'none'
+              },
+              onKeyDown: (event) => {
+                // Gérer la touche Entrée pour créer un nouveau tag
+                if (event.key === 'Enter' && canCreateNewTag && highlightedIndex === -1) {
+                  event.preventDefault()
+                  createNewTag(inputValue)
+                }
               }
             })}
           />

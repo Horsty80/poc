@@ -27,6 +27,28 @@ export function TypeScriptValidationExample() {
     />
   )
 
+  // ✅ Utilisation correcte - mode single avec createTag
+  const validSingleModeWithCreateTag = (
+    <BootstrapSelectableInput
+      items={mockItems}
+      itemSelection="single"
+      createTag={true}
+      onCreateTag={(label) => ({ id: Date.now().toString(), label })}
+      onSelectionChange={(item) => console.log(item)}
+    />
+  )
+
+  // ✅ Utilisation correcte - mode multiple avec createTag
+  const validMultipleModeWithCreateTag = (
+    <BootstrapSelectableInput
+      items={mockItems}
+      itemSelection="multiple"
+      createTag={true}
+      onCreateTag={(label) => ({ id: Date.now().toString(), label })}
+      onMultiSelectionChange={(items) => console.log(items)}
+    />
+  )
+
   // ❌ ERREUR TypeScript - ne peut pas utiliser canSelectAll avec mode single
   const invalidSingleWithSelectAll = (
     <BootstrapSelectableInput
@@ -67,8 +89,18 @@ export function TypeScriptValidationExample() {
       </div>
       
       <div>
+        <h4>✅ Utilisation valide - Mode single avec Create Tag</h4>
+        {validSingleModeWithCreateTag}
+      </div>
+      
+      <div>
         <h4>✅ Utilisation valide - Mode multiple avec Select All</h4>
         {validMultipleMode}
+      </div>
+      
+      <div>
+        <h4>✅ Utilisation valide - Mode multiple avec Create Tag</h4>
+        {validMultipleModeWithCreateTag}
       </div>
       
       {/* Les exemples commentés ci-dessous causeraient des erreurs TypeScript */}
