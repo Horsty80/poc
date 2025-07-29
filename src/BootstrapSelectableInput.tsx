@@ -20,7 +20,7 @@ interface Item {
 
 // Props de base communes
 interface BaseProps {
-  items: Item[]
+  items?: Item[] // Optionnel en mode async
   placeholder?: string
   placement?: 'top' | 'bottom' | 'auto'
   enableFlip?: boolean
@@ -32,6 +32,11 @@ interface BaseProps {
   isInvalid?: boolean // État d'erreur
   errorMessage?: string // Message d'erreur
   appendTo?: string // Sélecteur CSS pour l'élément de référence (ex: "#my-container", ".my-class")
+  // Props pour l'état de chargement
+  isLoading?: boolean // Indique que des données sont en cours de chargement
+  loadingText?: string // Texte affiché pendant le chargement
+  noResultsText?: string // Texte affiché quand aucun résultat
+  onInputChange?: (value: string) => void // Callback appelé quand l'input change (pour déclencher des recherches)
 }
 
 // Props pour le mode single
@@ -64,7 +69,7 @@ interface MultipleSelectionProps extends BaseProps {
 type BootstrapSelectableInputProps = SingleSelectionProps | MultipleSelectionProps
 
 export function BootstrapSelectableInput({ 
-  items, 
+  items = [], 
   placeholder, 
   onSelectionChange,
   onMultiSelectionChange,
@@ -83,14 +88,19 @@ export function BootstrapSelectableInput({
   summaryMode = false,
   canSelectAll = false,
   createTag = false,
-  onCreateTag
+  onCreateTag,
+  // Props pour l'état de chargement
+  isLoading = false,
+  loadingText = "Chargement...",
+  noResultsText = "Aucun résultat",
+  onInputChange
 }: BootstrapSelectableInputProps) {
   // États de sélection - en fonction du mode, seul l'un des deux est utilisé
   const [selectedItem, setSelectedItem] = useState<Item | null>(null) // Utilisé uniquement en mode 'single'
   const [selectedItems, setSelectedItems] = useState<Item[]>([]) // Utilisé uniquement en mode 'multiple'
   const [inputValue, setInputValue] = useState('')
   const [internalSummaryMode, setInternalSummaryMode] = useState(summaryMode) // État interne pour le toggle
-
+  
   // Placeholder statique
   const effectivePlaceholder = placeholder || (itemSelection === 'multiple' 
     ? "Sélectionnez des éléments..."
@@ -150,6 +160,9 @@ export function BootstrapSelectableInput({
     inputValue,
     onInputValueChange: ({ inputValue: newInputValue }) => {
       setInputValue(newInputValue || '')
+      
+      // Déclencher le callback onInputChange si fourni (pour la recherche asynchrone côté parent)
+      onInputChange?.(newInputValue || '')
     },
     onSelectedItemChange: ({ selectedItem: newSelectedItem }) => {
       if (itemSelection === 'multiple') {
@@ -287,12 +300,26 @@ export function BootstrapSelectableInput({
       }}
       className={`bootstrap-floating-menu list-group shadow-lg ${isOpen ? 'show' : ''}`}
     >
-      {isOpen && filteredItems.length === 0 && inputValue && (
-        <li className="list-group-item text-muted fst-italic">
-          <i className="bi bi-search me-2"></i>
-          Aucun résultat pour "{inputValue}"
+      {/* Indicateur de chargement */}
+      {isOpen && isLoading && (
+        <li className="list-group-item text-center py-3">
+          <div className="d-flex align-items-center justify-content-center">
+            <div className="spinner-border spinner-border-sm text-primary me-2" role="status">
+              <span className="visually-hidden">Chargement...</span>
+            </div>
+            <span className="text-muted">{loadingText}</span>
+          </div>
         </li>
       )}
+      
+      {/* Aucun résultat */}
+      {isOpen && !isLoading && filteredItems.length === 0 && inputValue && (
+        <li className="list-group-item text-muted fst-italic">
+          <i className="bi bi-search me-2"></i>
+          {noResultsText}
+        </li>
+      )}
+      
       {isOpen && itemSelection === 'multiple' && maxSelections && selectedItems.length >= maxSelections && (
         <li className="list-group-item text-warning fst-italic">
           <i className="bi bi-exclamation-triangle me-2"></i>
@@ -301,7 +328,7 @@ export function BootstrapSelectableInput({
       )}
       
       {/* Bouton Select All/Deselect All pour le mode multiple */}
-      {isOpen && itemSelection === 'multiple' && canSelectAll && filteredItems.length > 0 && (
+      {isOpen && itemSelection === 'multiple' && canSelectAll && filteredItems.length > 0 && !isLoading && (
         <li className="list-group-item list-group-item-action border-bottom border-secondary">
           <button
             type="button"
@@ -327,7 +354,7 @@ export function BootstrapSelectableInput({
       )}
 
       {/* Option pour créer un nouveau tag */}
-      {isOpen && canCreateNewTag && (
+      {isOpen && canCreateNewTag && !isLoading && (
         <li className="list-group-item list-group-item-action border-bottom border-secondary">
           <button
             type="button"
@@ -451,7 +478,11 @@ export function BootstrapSelectableInput({
           className={buttonClasses}
           aria-label="toggle menu"
         >
-          {isOpen ? (
+          {isLoading ? (
+            <div className="spinner-border spinner-border-sm" role="status">
+              <span className="visually-hidden">Chargement...</span>
+            </div>
+          ) : isOpen ? (
             <i className="bi bi-chevron-up"></i>
           ) : (
             <i className="bi bi-chevron-down"></i>

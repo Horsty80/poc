@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { BootstrapSelectableInput } from './BootstrapSelectableInput'
+import { AsyncBootstrapExample } from './AsyncBootstrapExample'
 import './App.css'
 
 const mockItemsWithDescriptions = [
@@ -15,6 +16,7 @@ function App() {
   const [selectedMultipleFrameworks, setSelectedMultipleFrameworks] = useState<any[]>([])
   const [selectedLimitedFrameworks, setSelectedLimitedFrameworks] = useState<any[]>([])
   const [dynamicItems, setDynamicItems] = useState(mockItemsWithDescriptions)
+  const [currentView, setCurrentView] = useState<'examples' | 'async'>('examples')
 
   // Fonction pour créer un nouveau tag
   const handleCreateTag = (label: string) => {
@@ -35,13 +37,40 @@ function App() {
       <div className="row">
         <div className="col-12">
           <h1 className="display-4 mb-4">Composant Bootstrap + Floating UI + Downshift</h1>
-          <p className="lead mb-5">
+          <p className="lead mb-3">
             Démonstration du composant avec Bootstrap, Floating UI et Downshift.
           </p>
+          
+          {/* Navigation entre les exemples */}
+          <div className="mb-4">
+            <div className="btn-group" role="group" aria-label="Navigation exemples">
+              <button
+                type="button"
+                className={`btn ${currentView === 'examples' ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setCurrentView('examples')}
+              >
+                <i className="bi bi-collection me-2"></i>
+                Exemples complets
+              </button>
+              <button
+                type="button"
+                className={`btn ${currentView === 'async' ? 'btn-success' : 'btn-outline-success'}`}
+                onClick={() => setCurrentView('async')}
+              >
+                <i className="bi bi-cloud-arrow-down me-2"></i>
+                Mode asynchrone
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="row mb-5">
+      {/* Affichage conditionnel selon la vue sélectionnée */}
+      {currentView === 'async' ? (
+        <AsyncBootstrapExample />
+      ) : (
+        <>
+          <div className="row mb-5">
         <div className="col-12">
           <div className="card border-primary">
             <div className="card-header bg-primary text-white">
@@ -477,6 +506,8 @@ function App() {
           </div>
         </div>
       </div>
+        </>
+      )}
     </div>
   )
 }
