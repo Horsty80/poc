@@ -18,11 +18,10 @@ interface Item {
   description?: string // Ajout d'une description optionnelle
 }
 
-interface BootstrapSelectableInputProps {
+// Props de base communes
+interface BaseProps {
   items: Item[]
   placeholder?: string
-  onSelectionChange?: (item: Item | null) => void
-  onMultiSelectionChange?: (items: Item[]) => void
   placement?: 'top' | 'bottom' | 'auto'
   enableFlip?: boolean
   portal?: boolean
@@ -33,10 +32,32 @@ interface BootstrapSelectableInputProps {
   isInvalid?: boolean // État d'erreur
   errorMessage?: string // Message d'erreur
   appendTo?: string // Sélecteur CSS pour l'élément de référence (ex: "#my-container", ".my-class")
-  itemSelection?: 'single' | 'multiple' // Mode de sélection
+}
+
+// Props pour le mode single
+interface SingleSelectionProps extends BaseProps {
+  itemSelection?: 'single'
+  onSelectionChange?: (item: Item | null) => void
+  // Ces propriétés ne sont pas autorisées en mode single
+  onMultiSelectionChange?: never
+  maxSelections?: never
+  summaryMode?: never
+  canSelectAll?: never
+}
+
+// Props pour le mode multiple
+interface MultipleSelectionProps extends BaseProps {
+  itemSelection: 'multiple'
+  onMultiSelectionChange?: (items: Item[]) => void
   maxSelections?: number // Nombre maximum de sélections (optionnel, uniquement pour 'multiple')
   summaryMode?: boolean // Mode résumé pour l'affichage des sélections multiples
+  canSelectAll?: boolean // Option pour sélectionner tous les éléments (défaut: false)
+  // Cette propriété n'est pas autorisée en mode multiple
+  onSelectionChange?: never
 }
+
+// Union type pour les props du composant
+type BootstrapSelectableInputProps = SingleSelectionProps | MultipleSelectionProps
 
 export function BootstrapSelectableInput({ 
   items, 
@@ -55,7 +76,8 @@ export function BootstrapSelectableInput({
   appendTo,
   itemSelection = 'single',
   maxSelections,
-  summaryMode = false
+  summaryMode = false,
+  canSelectAll = false
 }: BootstrapSelectableInputProps) {
   // États de sélection - en fonction du mode, seul l'un des deux est utilisé
   const [selectedItem, setSelectedItem] = useState<Item | null>(null) // Utilisé uniquement en mode 'single'
@@ -171,6 +193,31 @@ export function BootstrapSelectableInput({
     onMultiSelectionChange?.([])
   }
 
+  // Fonction pour sélectionner tous les éléments filtrés
+  const selectAllItems = () => {
+    // Ne sélectionner que les éléments filtrés qui ne sont pas déjà sélectionnés
+    const itemsToAdd = filteredItems.filter(item => 
+      !selectedItems.some(selected => selected.id === item.id)
+    )
+    
+    let newSelectedItems = [...selectedItems, ...itemsToAdd]
+    
+    // Respecter la limite maximale si définie
+    if (maxSelections && newSelectedItems.length > maxSelections) {
+      newSelectedItems = newSelectedItems.slice(0, maxSelections)
+    }
+    
+    setSelectedItems(newSelectedItems)
+    onMultiSelectionChange?.(newSelectedItems)
+  }
+
+  // Vérifier si tous les éléments filtrés sont sélectionnés
+  const areAllFilteredItemsSelected = () => {
+    return filteredItems.length > 0 && filteredItems.every(item =>
+      selectedItems.some(selected => selected.id === item.id)
+    )
+  }
+
   // Classes Bootstrap pour le bouton
   const buttonClasses = [
     'btn',
@@ -201,6 +248,33 @@ export function BootstrapSelectableInput({
           Limite de sélection atteinte ({maxSelections} maximum)
         </li>
       )}
+      
+      {/* Bouton Select All/Deselect All pour le mode multiple */}
+      {isOpen && itemSelection === 'multiple' && canSelectAll && filteredItems.length > 0 && (
+        <li className="list-group-item list-group-item-action border-bottom border-secondary">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              if (areAllFilteredItemsSelected()) {
+                // Désélectionner tous les éléments filtrés
+                const itemsToRemove = filteredItems.map(item => item.id)
+                const newSelectedItems = selectedItems.filter(item => !itemsToRemove.includes(item.id))
+                setSelectedItems(newSelectedItems)
+                onMultiSelectionChange?.(newSelectedItems)
+              } else {
+                selectAllItems()
+              }
+            }}
+            className="btn btn-sm btn-outline-primary w-100 d-flex align-items-center justify-content-center"
+          >
+            <i className={`bi ${areAllFilteredItemsSelected() ? 'bi-check-square-fill' : 'bi-square'} me-2`}></i>
+            {areAllFilteredItemsSelected() ? 'Désélectionner tout' : 'Sélectionner tout'}
+            {inputValue && ` (${filteredItems.length})`}
+          </button>
+        </li>
+      )}
+      
       {isOpen && filteredItems.map((item, index) => {
         const isSelected = itemSelection === 'multiple' 
           ? selectedItems.some(selected => selected.id === item.id)

@@ -180,6 +180,40 @@ function App() {
               </div>
               
               <div className="row mt-4">
+                <div className="col-md-6">
+                  <h5>Sélection multiple avec "Sélectionner tout"</h5>
+                  <BootstrapSelectableInput
+                    items={mockItemsWithDescriptions}
+                    placeholder="Avec option 'Sélectionner tout'..."
+                    label="Frameworks (avec Select All)"
+                    helpText="Utilisez le bouton 'Sélectionner tout' dans la liste déroulante"
+                    variant="primary"
+                    itemSelection="multiple"
+                    canSelectAll={true}
+                    onMultiSelectionChange={(items) => {
+                      console.log('Frameworks avec Select All:', items)
+                    }}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <h5>Avec limite + Select All</h5>
+                  <BootstrapSelectableInput
+                    items={mockItemsWithDescriptions}
+                    placeholder="Maximum 3 frameworks..."
+                    label="Frameworks (limite 3 + Select All)"
+                    helpText="Select All respecte la limite de 3 éléments maximum"
+                    variant="warning"
+                    itemSelection="multiple"
+                    maxSelections={3}
+                    canSelectAll={true}
+                    onMultiSelectionChange={(items) => {
+                      console.log('Frameworks limités avec Select All:', items)
+                    }}
+                  />
+                </div>
+              </div>
+              
+              <div className="row mt-4">
                 <div className="col-md-12">
                   {selectedMultipleFrameworks.length > 0 && (
                     <div className="alert alert-success" role="alert">
