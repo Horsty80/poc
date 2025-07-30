@@ -1,11 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { BootstrapSelectableInput } from './BootstrapSelectableInput'
-
-interface Item {
-  id: string
-  label: string
-  description?: string
-}
+import { BootstrapSelectableInput, type Item } from './BootstrapSelectableInput'
 
 // Simulation d'une API
 const simulateApiCall = async (searchTerm: string): Promise<Item[]> => {

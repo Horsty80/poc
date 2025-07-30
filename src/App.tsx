@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BootstrapSelectableInput } from './BootstrapSelectableInput'
+import { BootstrapSelectableInput, type Item } from './BootstrapSelectableInput'
 import { AsyncBootstrapExample } from './AsyncBootstrapExample'
 import './App.css'
 
@@ -12,9 +12,9 @@ const mockItemsWithDescriptions = [
 ]
 
 function App() {
-  const [selectedBootstrapFramework, setSelectedBootstrapFramework] = useState<any>(null)
-  const [selectedMultipleFrameworks, setSelectedMultipleFrameworks] = useState<any[]>([])
-  const [selectedLimitedFrameworks, setSelectedLimitedFrameworks] = useState<any[]>([])
+  const [selectedBootstrapFramework, setSelectedBootstrapFramework] = useState<Item | null>(null)
+  const [selectedMultipleFrameworks, setSelectedMultipleFrameworks] = useState<Item[]>([])
+  const [selectedLimitedFrameworks, setSelectedLimitedFrameworks] = useState<Item[]>([])
   const [dynamicItems, setDynamicItems] = useState(mockItemsWithDescriptions)
   const [currentView, setCurrentView] = useState<'examples' | 'async'>('examples')
 

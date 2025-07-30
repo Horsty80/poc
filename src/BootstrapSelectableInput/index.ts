@@ -1,4 +1,4 @@
-export { BootstrapSelectableInput } from './BootstrapSelectableInput/index'
+export { BootstrapSelectableInput } from './BootstrapSelectableInput'
 export type { 
   Item, 
   BaseProps, 
@@ -6,4 +6,4 @@ export type {
   MultipleSelectionProps, 
   BootstrapSelectableInputProps,
   SelectionMode 
-} from './BootstrapSelectableInput/types'
+} from './types'

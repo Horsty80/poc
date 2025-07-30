@@ -50,6 +50,7 @@ export function TypeScriptValidationExample() {
   )
 
   // ❌ ERREUR TypeScript - ne peut pas utiliser canSelectAll avec mode single
+  /*
   const invalidSingleWithSelectAll = (
     <BootstrapSelectableInput
       items={mockItems}
@@ -58,8 +59,10 @@ export function TypeScriptValidationExample() {
       onSelectionChange={(item) => console.log(item)}
     />
   )
+  */
 
   // ❌ ERREUR TypeScript - ne peut pas utiliser onSelectionChange avec mode multiple
+  /*
   const invalidMultipleWithSingleCallback = (
     <BootstrapSelectableInput
       items={mockItems}
@@ -67,8 +70,10 @@ export function TypeScriptValidationExample() {
       onSelectionChange={(item) => console.log(item)} // ❌ TypeScript Error: Property 'onSelectionChange' does not exist on type 'MultipleSelectionProps'
     />
   )
+  */
 
   // ❌ ERREUR TypeScript - ne peut pas utiliser maxSelections avec mode single
+  /*
   const invalidSingleWithMaxSelections = (
     <BootstrapSelectableInput
       items={mockItems}
@@ -77,6 +82,7 @@ export function TypeScriptValidationExample() {
       onSelectionChange={(item) => console.log(item)}
     />
   )
+  */
 
   return (
     <div>
